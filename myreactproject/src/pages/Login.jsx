@@ -2,7 +2,6 @@ import { useState } from 'react'
 import toast from 'react-hot-toast';
 import { jwtDecode } from 'jwt-decode';
 import { loginUserApi } from '../api/api';
-import { Navigate } from 'react-router';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -13,33 +12,34 @@ function Login() {
         }
         try {
             const data = {
-                email: email,
-                password: password
-            };
-            const res = await loginUserApi(data);
-            if (res?.data?.success) {
-                localStorage.setItem("token",res.data.token)
-                toast.success(res?.data?.message)
-                const decoded=jwtDecode(res?.data?.token)
-                if(decoded.role==="user"){
+                email: email, password: password
+            }
+            const response = await loginUserApi(data);
+            if (response?.data?.success) {
+                localStorage.setItem("token", response?.data?.token)
+                toast.success(response?.data?.message)
+                const decode = jwtDecode(response?.data?.token)
+                if(decode.role==="admin"){
+                    // return <Navigate to={"/dashboard"}/>
                     setTimeout(() => {
-                        return window.location.href='/dashboard'
+                        return window.location.href="/dashboard"
                     }, 1000);
                 }
                 else{
-                      setTimeout(() => {
-                        return window.location.href='/homepage'
+                    setTimeout(() => {
+                        return window.location.href="/homepage"
                     }, 1000);
+
                 }
 
                 return 
             }
             else {
-                return toast.error(res?.data?.message)
+                return toast.error(response?.data?.message)
             }
-
-        } catch (err) {
-            toast.error(err?.response?.data?.message);
+        }
+        catch (err) {
+            return toast.error(err?.response?.data?.message)  
         }
     }
     return (
@@ -55,3 +55,4 @@ function Login() {
     )
 }
 export default Login
+

@@ -13,6 +13,7 @@ import {ListandKeysDefault} from './pages/component/Buttons'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import UserHomepage from './pages/UserHomepage'
+import EditUser from './pages/EditUser'
 function App() {
 
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path='/listnew' element={<ListandKeysDefault></ListandKeysDefault>} />
         <Route path='/dashboard' element={<Dashboard></Dashboard>} />
         <Route path='/homepage' element={<UserHomepage></UserHomepage>} />
+        <Route path='/edit-user/:id' element={<EditUser></EditUser>} />
       </Routes>
     </Router>
   )

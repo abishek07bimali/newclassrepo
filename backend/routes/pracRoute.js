@@ -9,12 +9,12 @@ express.post("/createUsers",fileUpload('image'), createUsers);
 
 
 
-express.get("/getallusers" ,getAllUsers)
+express.get("/getallusers" ,authGuard,isAdmin,getAllUsers)
 
 
-express.get("/getusers",findUserById)
+express.get("/getusersbyid/:id",authGuard,isAdmin,findUserById)
 
-express.put("/updateUsers",authGuard, fileUpload('image'), updateUser);
+express.put("/updateUsers/:id",authGuard,isAdmin, fileUpload('image'), updateUser);
 
 
 

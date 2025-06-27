@@ -18,11 +18,11 @@ const createUsers = async (req, res) => {
         const image = req.files?.length ? req.files[0].path : null;
         const userExist = await User.findOne({ where: { username: userName } });
         if (userExist) {
-            return res.json({ message: "user already exist use different username " })
+            return res.json({ success: false, message: "user already exist use different username " })
         }
         const emailExist = await User.findOne({ where: { email: email } });
         if (emailExist) {
-            return res.json({ message: "user already exist use different email " })
+            return res.json({ success: false, message: "user already exist use different email " })
         }
         const salt = await bcrypt.genSalt(10);
         const newpassword = await bcrypt.hash(password, salt)
@@ -74,11 +74,11 @@ const deleteUsers = async (req, res) => {
 
 
 const findUserById = async (req, res) => {
-    const userId = req.body.id;
+    const userId = req.params.id;
     try {
         const userExist = await User.findOne({ where: { id: userId } });
         if (userExist) {
-            return res.json({ userExist: { id: userExist.id } })
+            return res.json({ userExist: { id: userExist.id, email: userExist.email, username: userExist.username } })
         } else {
             res.json({ message: "User not found!" })
         }
@@ -87,37 +87,38 @@ const findUserById = async (req, res) => {
     }
 }
 
-const findByid = async (req, res) => {
-    try {
-        // res.json({user:await User.findByPk(req.body.id)})
-        res.json({ user: await User.findOne({ id: req.body.id }) })
 
-    }
-    catch (error) {
-        res.json({ message: "" })
-    }
-}
 
 const updateUser = async (req, res) => {
-    const userId = req.user.id;
+    const userId = req.params.id;
+    console.log(req.body)
     try {
         const userExist = await User.findByPk(userId);
         if (userExist) {
-            console.log("user exist")
             const { username, email, password } = req.body;
-
             const image = req.files?.length ? req.files[0].path : userExist.image;
 
-            let newpassword = userExist.password;
-            if (password) {
-                const salt = await bcrypt.genSalt(10);
-                newpassword = await bcrypt.hash(password, salt);
+            // let newpassword = userExist.password;
+            // if (password) {
+            //     const salt = await bcrypt.genSalt(10);
+            //     newpassword = await bcrypt.hash(password, salt);
+            // }
+            if (username && username !== userExist.username) {
+                const usernameTaken = await User.findOne({ where: { username:username } });
+                if (usernameTaken && usernameTaken.id !== userId) {
+                    return res.status(400).json({ success: false, message: "Username already taken" });
+                }
             }
-
+            if (email && email !== userExist.email) {
+                const emailTaken = await User.findOne({ where: { email:email } });
+                if (emailTaken && emailTaken.id !== userId) {
+                    return res.status(400).json({ success: false, message: "Email already taken" });
+                }
+            }
             const updateduser = await User.update(
-                { username, password: newpassword, email, image },
+                { username, email, image },
                 { where: { id: userId } });
-            return res.status(201).json({
+            return res.status(200).json({
                 success: true,
                 message: "user updated!!", updateduser
             });
@@ -163,7 +164,7 @@ const loginUser = async (req, res) => {
 
     try {
         const { email, password } = req.body;
-        if(!email || !password) return res.status(404).json({ success: false, message: 'enter all fields' })
+        if (!email || !password) return res.status(404).json({ success: false, message: 'enter all fields' })
         const user = await User.findOne({ where: { email: email } });
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
